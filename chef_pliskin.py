@@ -4,6 +4,7 @@ import praw
 import sqlite3
 import time
 import obot
+from oncepersub import OncePerSub
 
 conversionChart = {
     'rare': 'medium rare',
@@ -17,9 +18,7 @@ waitTime = 60 * 10 # Runs every 10 minutes
 
 # Open the SQL database
 print 'Opening SQL database connection.'
-sql = sqlite3.connect('chef_pliskin.db')
-cursor = sql.cursor()
-cursor.execute('CREATE TABLE IF NOT EXISTS commentedsubmissions(id TEXT)')
+oncePerSub = OncePerSub('chef_pliskin.db')
 
 # Connect to reddit
 print 'Connecting to Reddit'
@@ -37,8 +36,7 @@ def shouldReplyToSubmission(submission):
         return False
 
     # ... and isn't a submission that we've commented on before.
-    cursor.execute('SELECT * FROM commentedsubmissions WHERE ID=?', [submission.id])
-    if cursor.fetchone():
+    if oncePerSub.isHandled(submission):
         return False
 
     return True
@@ -52,11 +50,9 @@ def replyToSubmission(submission):
     comment = createResponseComment(submission)
     print 'With this comment: ', comment
 
-    submission.add_comment(comment);
+    #submission.add_comment(comment);
 
-    # Update our database so that we don't reply to this submission again
-    cursor.execute('INSERT INTO commentedsubmissions VALUES(?)', [submission.id])
-    sql.commit()
+    oncePerSub.handle(submission)
 
 def runBot():
     print 'chef_pliskin is looking for matching submissions.'

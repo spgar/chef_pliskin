@@ -1,0 +1,3 @@
+[submodule "oncepersub"]
+	path = oncepersub
+	url = https://github.com/spgar/oncepersub.git
